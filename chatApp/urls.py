@@ -23,7 +23,6 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('video/', include('video.urls')),
-    path('chat/', include('chat.urls')),
     path('', RedirectView.as_view(url='/video/list/', permanent=False)),  # 根路径重定向到视频列表
 ]
 

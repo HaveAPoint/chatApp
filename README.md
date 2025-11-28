@@ -1,6 +1,6 @@
-# Django 视频 OCR 和聊天应用
+# Django 视频 OCR 应用
 
-基于 Django 4.2 + Python 3.9，集成 gemai.cc API（OpenAI 兼容），实现视频画面文字提取和智能聊天功能。
+基于 Django 4.2 + Python 3.9，集成豆包多模态 API（OpenAI 兼容），实现视频画面文字提取功能。
 
 ## 功能特性
 
@@ -13,12 +13,6 @@
 - **OCR识别**：使用 Gemini 2.5/3 Pro 模型识别视频帧中的文字
 - **智能合并**：使用编辑距离算法合并相似文字，解决残缺字问题
 - **结果展示**：按时间轴展示识别结果，支持复制导出
-
-### 2. 聊天功能
-- **单次问答模式**：每次对话独立，不保留历史
-- **多轮对话模式**：保留对话历史，支持上下文理解
-- **会话管理**：支持创建、查看、切换多个会话
-- **模型选择**：支持 Gemini 2.5 Pro 和 Gemini 3 Pro
 
 ## 技术栈
 
@@ -42,12 +36,6 @@ chatApp/
 │   ├── views.py         # 视图函数
 │   ├── urls.py          # URL路由
 │   ├── utils.py         # 视频处理工具（抽帧、合并）
-│   ├── tests/           # 单元测试
-│   └── templates/       # 模板文件
-├── chat/                # 聊天应用
-│   ├── models.py        # 数据模型（Conversation, Message）
-│   ├── views.py         # 视图函数
-│   ├── urls.py          # URL路由
 │   ├── tests/           # 单元测试
 │   └── templates/       # 模板文件
 ├── config/              # 配置模块
@@ -125,25 +113,6 @@ python manage.py runserver
    - 可以查看合并后的文字内容和详细的时间轴结果
    - 支持复制全部文字
 
-### 聊天功能
-
-1. **创建会话**
-   - 访问 `/chat/` 或点击导航栏的"聊天"
-   - 系统自动创建新会话
-
-2. **选择模式**
-   - **单次问答**：每次消息独立处理，适合简单问答
-   - **多轮对话**：保留历史上下文，适合复杂对话
-
-3. **发送消息**
-   - 在输入框输入消息
-   - 点击"发送"或按Enter键
-   - AI会立即回复
-
-4. **管理会话**
-   - 访问 `/chat/list/` 查看所有会话
-   - 可以继续之前的对话
-
 ## 核心算法说明
 
 ### 解决残缺字问题的策略
@@ -175,12 +144,10 @@ python manage.py test
 
 # 运行特定应用的测试
 python manage.py test video
-python manage.py test chat
 python manage.py test utils
 
 # 运行特定测试文件
 python manage.py test video.tests.test_models
-python manage.py test chat.tests.test_views
 ```
 
 ## API配置

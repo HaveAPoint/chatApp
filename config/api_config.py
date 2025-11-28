@@ -23,17 +23,11 @@ API_KEY = os.environ.get("ARK_API_KEY", "")
 DEFAULT_MODEL = "doubao-seed-1-6-251015"
 ENABLE_DEEP_THINKING = True
 
-# 支持的模型列表
-# 豆包多模态模型（支持视频和图像处理）
+# 支持的模型列表（当前仅使用多模态视觉模型）
 MODELS = {
-    'chat': {
+    'vision': {
         'doubao_vision': DEFAULT_MODEL,
         'default': DEFAULT_MODEL,
-    },
-    'vision': {
-        # 用于视频和图像处理的模型
-        'doubao_vision': DEFAULT_MODEL,
-        'default': DEFAULT_MODEL,  # 默认使用豆包多模态模型
     }
 }
 

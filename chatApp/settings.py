@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # 自定义应用
     'video',  # 视频OCR应用
-    'chat',   # 聊天应用
 ]
 
 MIDDLEWARE = [

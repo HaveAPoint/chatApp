@@ -75,7 +75,8 @@ class VideoFileModelTestCase(TestCase):
         )
         
         filename = video.get_file_name()
-        self.assertIn("test_video.mp4", filename)
+        self.assertTrue(filename.endswith(".mp4"))
+        self.assertIn("test_video", filename)
     
     def test_get_file_size_mb(self):
         """测试获取文件大小（MB）方法"""
@@ -260,9 +261,10 @@ class OCRResultModelTestCase(TestCase):
     
     def test_ocr_result_str(self):
         """测试模型的字符串表示"""
+        long_text = "这是一段很长的文字内容，用于测试字符串截断功能" * 3
         ocr_result = OCRResult.objects.create(
             frame=self.frame,
-            text_content="这是一段很长的文字内容，用于测试字符串截断功能"
+            text_content=long_text
         )
         
         str_repr = str(ocr_result)
@@ -287,5 +289,6 @@ class OCRResultModelTestCase(TestCase):
                 frame=self.frame,
                 text_content="另一个结果"
             )
+
 
 

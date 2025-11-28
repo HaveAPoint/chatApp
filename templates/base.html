@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Django OCR & Chat App{% endblock %}</title>
+    <title>{% block title %}Django 视频OCR应用{% endblock %}</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     {% block extra_css %}{% endblock %}
@@ -11,10 +11,9 @@
 <body>
     <nav class="navbar">
         <div class="container">
-            <a href="{% url 'video:list' %}" class="logo">OCR & Chat</a>
+            <a href="{% url 'video:list' %}" class="logo">视频OCR</a>
             <div class="nav-links">
                 <a href="{% url 'video:list' %}">视频OCR</a>
-                <a href="{% url 'chat:list' %}">聊天</a>
             </div>
         </div>
     </nav>
@@ -37,7 +36,7 @@
 
     <footer class="footer">
         <div class="container">
-            <p>&copy; 2024 Django OCR & Chat App. All rights reserved.</p>
+            <p>&copy; 2024 Django 视频OCR应用. All rights reserved.</p>
         </div>
     </footer>
 
@@ -45,5 +44,6 @@
     {% block extra_js %}{% endblock %}
 </body>
 </html>
+
 
 
