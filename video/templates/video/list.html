@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}视频列表 - OCR & Chat{% endblock %}
+
+{% block content %}
+<div class="video-list-container">
+    <div class="page-header">
+        <h1>视频列表</h1>
+        <a href="{% url 'video:upload' %}" class="btn btn-primary">上传新视频</a>
+    </div>
+
+    {% if videos %}
+        <table class="video-table">
+            <thead>
+                <tr>
+                    <th>标题</th>
+                    <th>文件大小</th>
+                    <th>时长</th>
+                    <th>分辨率</th>
+                    <th>状态</th>
+                    <th>创建时间</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for video in videos %}
+                <tr>
+                    <td>{{ video.title }}</td>
+                    <td>{{ video.get_file_size_mb }} MB</td>
+                    <td>{{ video.get_duration_formatted|default:"未知" }}</td>
+                    <td>{{ video.resolution|default:"未知" }}</td>
+                    <td>
+                        <span class="status-badge status-{{ video.status }}">
+                            {{ video.get_status_display }}
+                        </span>
+                    </td>
+                    <td>{{ video.created_at|date:"Y-m-d H:i" }}</td>
+                    <td>
+                        {% if video.status == 'uploaded' %}
+                            <a href="{% url 'video:process' video.id %}" class="btn btn-sm btn-primary">开始处理</a>
+                        {% elif video.status == 'processing' %}
+                            <a href="{% url 'video:process' video.id %}" class="btn btn-sm btn-info">查看进度</a>
+                        {% elif video.status == 'completed' %}
+                            <a href="{% url 'video:result' video.id %}" class="btn btn-sm btn-success">查看结果</a>
+                        {% elif video.status == 'failed' %}
+                            <a href="{% url 'video:process' video.id %}" class="btn btn-sm btn-warning">重新处理</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="empty-state">
+            <p>还没有上传任何视频</p>
+            <a href="{% url 'video:upload' %}" class="btn btn-primary">上传第一个视频</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+

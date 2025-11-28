@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}处理视频 - {{ video.title }} - OCR & Chat{% endblock %}
+
+{% block extra_css %}
+<style>
+    .process-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    .video-info {
+        background: #f5f5f5;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    .process-form {
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .status-indicator {
+        padding: 10px;
+        border-radius: 4px;
+        margin: 10px 0;
+    }
+    .status-processing {
+        background: #fff3cd;
+        color: #856404;
+    }
+    .status-completed {
+        background: #d4edda;
+        color: #155724;
+    }
+    .status-failed {
+        background: #f8d7da;
+        color: #721c24;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="process-container">
+    <h1>处理视频：{{ video.title }}</h1>
+
+    <div class="video-info">
+        <p><strong>文件大小：</strong>{{ video.get_file_size_mb }} MB</p>
+        <p><strong>时长：</strong>{{ video.get_duration_formatted|default:"未知" }}</p>
+        <p><strong>分辨率：</strong>{{ video.resolution|default:"未知" }}</p>
+        <p><strong>当前状态：</strong>
+            <span class="status-indicator status-{{ video.status }}">
+                {{ video.get_status_display }}
+            </span>
+        </p>
+        {% if video.error_message %}
+            <p><strong>错误信息：</strong>{{ video.error_message }}</p>
+        {% endif %}
+    </div>
+
+    {% if video.status == 'uploaded' %}
+        <div class="process-form">
+            <h2>开始处理</h2>
+            <p>将直接上传整个视频文件进行OCR识别，无需抽帧处理。</p>
+            <form method="post" id="process-form">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label>选择模型</label>
+                    <select name="model" id="model">
+                        <option value="{{ vision_model }}">{{ vision_model }}（当前配置）</option>
+                    </select>
+                    <small>使用内置豆包多模态模型直接处理视频</small>
+                </div>
+
+                <button type="submit" class="btn btn-primary">开始处理</button>
+            </form>
+        </div>
+    {% elif video.status == 'processing' %}
+        <div class="process-form">
+            <h2>处理中...</h2>
+            <div id="progress-info">
+                <p>正在处理视频，请稍候...</p>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                <p id="status-text">初始化中...</p>
+            </div>
+        </div>
+    {% elif video.status == 'completed' %}
+        <div class="process-form">
+            <h2>处理完成</h2>
+            <p>共提取 {{ frames.count }} 帧，识别了 {{ ocr_results.count }} 条文字</p>
+            <a href="{% url 'video:result' video.id %}" class="btn btn-success">查看识别结果</a>
+        </div>
+    {% elif video.status == 'failed' %}
+        <div class="process-form">
+            <h2>处理失败</h2>
+            <p>{{ video.error_message }}</p>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-warning">重新处理</button>
+            </form>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+    // 处理表单提交
+    document.getElementById('process-form')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        
+        fetch(this.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('处理完成！');
+                window.location.reload();
+            } else {
+                alert('处理失败：' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('处理失败，请重试');
+        });
+    });
+
+    // 如果正在处理，轮询状态
+    {% if video.status == 'processing' %}
+    function pollStatus() {
+        fetch('{% url "video:status_api" video.id %}')
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'completed') {
+                    window.location.reload();
+                } else if (data.status === 'failed') {
+                    window.location.reload();
+                } else {
+                    setTimeout(pollStatus, 2000); // 2秒后再次查询
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                setTimeout(pollStatus, 2000);
+            });
+    }
+    pollStatus();
+    {% endif %}
+</script>
+{% endblock %}
+

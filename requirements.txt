@@ -1,0 +1,13 @@
+asgiref==3.11.0
+Django==4.2
+sqlparse==0.5.3
+typing_extensions==4.15.0
+# API客户端
+openai>=1.0.0
+# 图像处理
+Pillow>=10.0.0
+opencv-python>=4.8.0
+# 视频处理（FFmpeg Python绑定）
+ffmpeg-python>=0.2.0
+# 工具库
+python-Levenshtein>=0.21.0  # 用于文本相似度计算（编辑距离）

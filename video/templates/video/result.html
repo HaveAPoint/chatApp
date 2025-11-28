@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}识别结果 - {{ video.title }} - OCR & Chat{% endblock %}
+
+{% block content %}
+<div class="result-container">
+    <h1>识别结果：{{ video.title }}</h1>
+
+    <div class="result-actions">
+        <a href="{% url 'video:list' %}" class="btn btn-secondary">返回列表</a>
+        <button onclick="copyText()" class="btn btn-primary">复制全部文字</button>
+    </div>
+
+    <div class="result-summary">
+        <h2>合并后的文字内容</h2>
+        <div class="text-content" id="text-content">
+            {% if ocr_text_summary %}
+                <pre>{{ ocr_text_summary }}</pre>
+            {% else %}
+                <p>暂无识别结果</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="result-details">
+        <h2>详细结果（按时间排序）</h2>
+        {% if merged_results %}
+            <table class="result-table">
+                <thead>
+                    <tr>
+                        <th>时间范围</th>
+                        <th>识别文字</th>
+                        <th>帧数</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for result in merged_results %}
+                    <tr>
+                        <td>{{ result.start_time|floatformat:2 }}s - {{ result.end_time|floatformat:2 }}s</td>
+                        <td>{{ result.text }}</td>
+                        <td>{{ result.frame_count }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>暂无详细结果</p>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function copyText() {
+    const textContent = document.getElementById('text-content').innerText;
+    navigator.clipboard.writeText(textContent).then(function() {
+        alert('文字已复制到剪贴板');
+    }, function(err) {
+        console.error('复制失败:', err);
+        alert('复制失败，请手动选择文字复制');
+    });
+}
+</script>
+{% endblock %}
+
+

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}会话列表 - OCR & Chat{% endblock %}
+
+{% block content %}
+<div class="conversation-list-container">
+    <div class="page-header">
+        <h1>会话列表</h1>
+        <button onclick="createNewConversation()" class="btn btn-primary">新建会话</button>
+    </div>
+
+    {% if conversations %}
+        <table class="conversation-table">
+            <thead>
+                <tr>
+                    <th>标题</th>
+                    <th>模式</th>
+                    <th>模型</th>
+                    <th>消息数</th>
+                    <th>更新时间</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for conversation in conversations %}
+                <tr>
+                    <td>{{ conversation.title|default:"未命名会话" }}</td>
+                    <td>{{ conversation.get_mode_display }}</td>
+                    <td>{{ conversation.model_used }}</td>
+                    <td>{{ conversation.get_message_count }}</td>
+                    <td>{{ conversation.updated_at|date:"Y-m-d H:i" }}</td>
+                    <td>
+                        <a href="{% url 'chat:conversation' conversation.id %}" class="btn btn-sm btn-primary">继续对话</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="empty-state">
+            <p>还没有任何会话</p>
+            <button onclick="createNewConversation()" class="btn btn-primary">创建第一个会话</button>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function createNewConversation() {
+    fetch('/chat/api/create/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.location.href = `/chat/${data.conversation.id}/`;
+        } else {
+            alert('创建会话失败：' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('创建会话失败，请重试');
+    });
+}
+</script>
+{% endblock %}
+
+

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}上传视频 - OCR & Chat{% endblock %}
+
+{% block content %}
+<div class="upload-container">
+    <h1>上传视频文件</h1>
+    
+    {% if error %}
+        <div class="alert alert-error">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" class="upload-form">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="title">视频标题（可选）</label>
+            <input type="text" id="title" name="title" placeholder="输入视频标题">
+        </div>
+
+        <div class="form-group">
+            <label for="video_file">选择视频文件</label>
+            <input type="file" id="video_file" name="video_file" accept=".mp4,.avi,.mov,.mkv,.webm" required>
+            <small>支持格式：MP4, AVI, MOV, MKV, WEBM（最大100MB）</small>
+        </div>
+
+        <button type="submit" class="btn btn-primary">上传视频</button>
+    </form>
+
+    <div class="upload-info">
+        <h3>使用说明</h3>
+        <ul>
+            <li>上传视频文件后，系统将自动提取视频帧</li>
+            <li>使用AI模型识别每帧中的文字内容</li>
+            <li>智能合并识别结果，避免残缺字问题</li>
+            <li>支持场景检测和固定间隔两种提取方式</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+
