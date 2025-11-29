@@ -10,7 +10,7 @@
   - 场景检测模式：自动识别场景变化点，提取关键帧
   - 固定间隔模式：按指定频率提取帧
   - 重叠窗口策略：避免边界文字被截断
-- **OCR识别**：使用 Gemini 2.5/3 Pro 模型识别视频帧中的文字
+- **OCR识别**：使用豆包多模态API（doubao-seed-1-6-251015）识别视频帧中的文字
 - **智能合并**：使用编辑距离算法合并相似文字，解决残缺字问题
 - **结果展示**：按时间轴展示识别结果，支持复制导出
 
@@ -18,7 +18,7 @@
 
 - **后端框架**：Django 4.2
 - **Python版本**：3.9
-- **API客户端**：OpenAI SDK（兼容 gemai.cc）
+- **API客户端**：OpenAI SDK（兼容豆包多模态API）
 - **视频处理**：FFmpeg
 - **图像处理**：Pillow、OpenCV
 - **文本相似度**：python-Levenshtein
@@ -157,7 +157,7 @@ API配置位于 `config/api_config.py`：
 - **API端点**：https://ark.cn-beijing.volces.com/api/v3
 - **API密钥**：从环境变量 `ARK_API_KEY` 读取
 - **支持模型**：
-  - doubao-seed-1-6
+  - doubao-seed-1-6-251015（默认）
 
 **重要**：使用前必须设置环境变量：
 ```bash
