@@ -8,6 +8,7 @@ API客户端模块
 3. 错误处理和重试机制
 """
 
+from pickle import FALSE
 from openai import OpenAI
 from typing import Dict, Any
 import logging
@@ -27,7 +28,7 @@ def _get_completion_kwargs() -> Dict[str, Any]:
     """统一追加可选API特性（如深度思考）"""
     extra_kwargs = {}
     if ENABLE_DEEP_THINKING:
-        extra_kwargs['extra_body'] = {"enable_deep_thinking": True}
+        extra_kwargs['extra_body'] = {"enable_deep_thinking": FALSE}
     return extra_kwargs
 
 
