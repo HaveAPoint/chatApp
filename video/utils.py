@@ -27,17 +27,40 @@ def check_ffmpeg_available() -> bool:
     """
     检查FFmpeg是否可用
     
+    FFmpeg是一个强大的多媒体处理工具，用于：
+    - 视频格式转换
+    - 视频信息提取
+    - 视频帧提取
+    - 视频编辑等
+    
+    这个函数通过运行FFmpeg命令来检查它是否已安装并可用。
+    
     Returns:
         bool: 如果FFmpeg可用返回True，否则返回False
+        
+    Note:
+        FFmpeg需要单独安装，不是Python包。
+        Linux: sudo apt-get install ffmpeg
+        macOS: brew install ffmpeg
+        Windows: 从官网下载并添加到PATH
     """
     try:
+        # 使用subprocess运行FFmpeg命令
+        # subprocess.run()用于执行系统命令
+        # ['ffmpeg', '-version']: 命令和参数列表
+        #   ffmpeg: FFmpeg可执行文件名
+        #   -version: 显示版本信息的参数
+        # capture_output=True: 捕获标准输出和标准错误
+        # check=True: 如果命令返回非零退出码则抛出异常
         subprocess.run(
             ['ffmpeg', '-version'],
-            capture_output=True,
-            check=True
+            capture_output=True,  # 捕获输出
+            check=True  # 检查退出码
         )
-        return True
+        return True  # 命令执行成功，FFmpeg可用
     except (subprocess.CalledProcessError, FileNotFoundError):
+        # CalledProcessError: 命令执行失败（退出码非零）
+        # FileNotFoundError: 找不到命令（FFmpeg未安装或不在PATH中）
         logger.warning("FFmpeg未安装或不可用")
         return False
 
@@ -69,31 +92,67 @@ def get_video_info(video_path: str) -> Dict[str, any]:
         raise Exception("FFmpeg未安装，无法获取视频信息")
     
     try:
-        # 使用FFprobe获取视频信息
+        # ====================================================================
+        # 构建FFprobe命令
+        # ====================================================================
+        # FFprobe是FFmpeg套件的一部分，用于获取媒体文件信息
         cmd = [
-            'ffprobe',
-            '-v', 'error',
+            'ffprobe',  # FFprobe可执行文件
+            '-v', 'error',  # 日志级别：只显示错误信息
+            # -show_entries: 指定要显示的信息
+            #   format=duration: 视频总时长
+            #   stream=width,height,codec_name,r_frame_rate: 视频流信息
+            #     width: 视频宽度（像素）
+            #     height: 视频高度（像素）
+            #     codec_name: 视频编码格式（如h264）
+            #     r_frame_rate: 帧率（分数形式，如30/1）
             '-show_entries', 'format=duration:stream=width,height,codec_name,r_frame_rate',
+            # -of: 输出格式
+            #   default: 默认格式
+            #   noprint_wrappers=1: 不打印包装器
+            #   nokey=1: 不打印键名，只打印值
             '-of', 'default=noprint_wrappers=1:nokey=1',
-            video_path
+            video_path  # 视频文件路径
         ]
         
+        # 执行FFprobe命令
+        # text=True: 以文本模式处理输出（返回字符串而不是字节）
+        # check=True: 如果命令失败则抛出异常
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        
+        # 解析输出
+        # result.stdout: 标准输出（包含视频信息）
+        # .strip(): 去除首尾空白字符
+        # .split('\n'): 按换行符分割成列表
         output = result.stdout.strip().split('\n')
         
-        # 解析输出（格式可能因FFprobe版本而异）
+        # ====================================================================
+        # 解析FFprobe输出
+        # ====================================================================
+        # FFprobe输出格式（每行一个值）：
+        #   123.456  (duration: 时长，秒)
+        #   1920     (width: 宽度，像素)
+        #   1080     (height: 高度，像素)
+        #   h264     (codec: 编码格式)
+        #   30/1     (fps: 帧率，分数形式)
         info = {
-            'duration': float(output[0]) if output[0] else None,
-            'width': int(output[1]) if len(output) > 1 and output[1] else None,
-            'height': int(output[2]) if len(output) > 2 and output[2] else None,
-            'codec': output[3] if len(output) > 3 else None,
-            'fps': None
+            'duration': float(output[0]) if output[0] else None,  # 时长（秒）
+            'width': int(output[1]) if len(output) > 1 and output[1] else None,  # 宽度（像素）
+            'height': int(output[2]) if len(output) > 2 and output[2] else None,  # 高度（像素）
+            'codec': output[3] if len(output) > 3 else None,  # 编码格式
+            'fps': None  # 帧率（稍后解析）
         }
         
-        # 解析帧率
+        # ====================================================================
+        # 解析帧率（分数形式转换为小数）
+        # ====================================================================
+        # FFprobe返回的帧率是分数形式（如"30/1"表示30fps）
+        # 需要将分数转换为小数
         if len(output) > 4 and output[4]:
+            # 分割分数：'30/1' -> ['30', '1']
             fps_parts = output[4].split('/')
             if len(fps_parts) == 2:
+                # 计算帧率：30 / 1 = 30.0
                 info['fps'] = float(fps_parts[0]) / float(fps_parts[1])
         
         logger.info(f"获取视频信息成功: {info}")
@@ -318,27 +377,56 @@ def calculate_text_similarity(text1: str, text2: str) -> float:
     """
     计算两个文本的相似度
     
-    使用编辑距离（Levenshtein距离）计算文本相似度。
-    相似度范围：0-1，1表示完全相同。
+    使用编辑距离（Levenshtein距离）算法计算文本相似度。
+    
+    编辑距离（Levenshtein距离）：
+    - 将一个字符串转换为另一个字符串所需的最少单字符编辑操作数
+    - 编辑操作包括：插入、删除、替换字符
+    - 例如："abc" -> "abd" 需要1次替换操作，距离为1
+    
+    相似度计算：
+    - 相似度 = 1 - (编辑距离 / 最大长度)
+    - 范围：0-1，1表示完全相同，0表示完全不同
+    
+    用途：
+    - 在merge_ocr_results()中用于判断两个OCR结果是否相似
+    - 如果相似度高，说明可能是同一段文字，应该合并
     
     Args:
         text1: 第一个文本
         text2: 第二个文本
         
     Returns:
-        float: 相似度（0-1之间）
+        float: 相似度（0-1之间），1表示完全相同
+        
+    Example:
+        >>> calculate_text_similarity("Hello", "Hello")
+        1.0
+        >>> calculate_text_similarity("Hello", "Hallo")
+        0.8
+        >>> calculate_text_similarity("Hello", "World")
+        0.0
     """
+    # 如果两个文本都为空，认为完全相同
     if not text1 and not text2:
         return 1.0
+    
+    # 如果其中一个为空，认为完全不同
     if not text1 or not text2:
         return 0.0
     
-    # 计算编辑距离
+    # 计算最大长度（用于归一化）
     max_len = max(len(text1), len(text2))
     if max_len == 0:
         return 1.0
     
+    # 计算编辑距离（Levenshtein距离）
+    # levenshtein_distance()来自python-Levenshtein库
+    # 返回将text1转换为text2所需的最少编辑操作数
     distance = levenshtein_distance(text1, text2)
+    
+    # 计算相似度：1 - (距离 / 最大长度)
+    # 距离越小，相似度越高
     similarity = 1.0 - (distance / max_len)
     
     return similarity
